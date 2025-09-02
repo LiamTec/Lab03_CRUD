@@ -1,61 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Despliegue de CRUD Laravel con Docker en Ubuntu
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Descripción
+Este proyecto implementa un CRUD básico en Laravel, desplegado usando Docker y Docker Compose con Apache, PHP y MySQL. La imagen de la aplicación está publicada en Docker Hub para facilitar el despliegue en cualquier entorno.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Instalaciones necesarias en Ubuntu
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Instalar Docker y Docker Compose:**
+   ```bash
+   sudo apt update
+   sudo apt install ca-certificates curl gnupg -y
+   sudo install -m 0755 -d /etc/apt/keyrings
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+   echo \
+     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+     $(lsb_release -cs) stable" | \
+     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   sudo apt update
+   sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+   ```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. **Verificar instalación:**
+   ```bash
+   sudo docker --version
+   sudo docker compose version
+   ```
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Archivos Docker usados
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Dockerfile**: Define cómo construir la imagen de la aplicación Laravel con Apache y PHP.
+- **docker-compose.yml**: Orquesta los servicios de la aplicación (`app`) y la base de datos (`db`), incluyendo variables de entorno y volúmenes.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Imagen Docker Hub
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **App:** `liamtec/crud-laravel-app:latest`
+- **Base de datos:** `mysql:8.0` (oficial)
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Pasos realizados en Ubuntu
 
-## Contributing
+1. **Copia el archivo `docker-compose.yml` al servidor Ubuntu**
+   - Puedes hacerlo manualmente, por USB, SCP, etc.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. **Descarga la imagen de la app desde Docker Hub**
+   ```bash
+   sudo docker pull liamtec/crud-laravel-app:latest
+   ```
 
-## Code of Conduct
+3. **Levanta el entorno con Docker Compose**
+   ```bash
+   sudo docker compose up
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. **Accede a la aplicación**
+   - Abre `http://localhost:8080` en el navegador de Ubuntu.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Explicación de los archivos Docker
 
-## License
+- **docker-compose.yml**
+  - Define dos servicios:
+    - `app`: Usa la imagen de Docker Hub, expone el puerto 8080, espera 15 segundos antes de ejecutar migraciones para asegurar que MySQL esté listo.
+    - `db`: Usa la imagen oficial de MySQL, expone el puerto 3306 y persiste los datos en un volumen.
+  - Variables de entorno configuran la conexión entre Laravel y MySQL.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Dockerfile**
+  - Parte de `php:8.2-apache`.
+  - Instala dependencias de PHP y Composer.
+  - Copia el código de Laravel.
+  - Configura Apache para servir la app desde `/var/www/html/public`.
+
+---
+
+## Uso de Docker Hub
+
+- La imagen `liamtec/crud-laravel-app:latest` está publicada en Docker Hub.
+- Puedes descargarla en cualquier servidor con Docker usando:
+  ```bash
+  sudo docker pull liamtec/crud-laravel-app:latest
+  ```
+- El archivo `docker-compose.yml` la usará automáticamente para levantar el entorno.
+
+---
+
+## Notas finales
+
+- No es necesario instalar Apache, PHP, MySQL ni Laravel en Ubuntu; todo está contenido en los servicios Docker.
+- Puedes actualizar la imagen de la app reconstruyendo y subiendo una nueva versión a Docker Hub.
+- El entorno es portable y reproducible en cualquier máquina con Docker y Docker Compose.
+
+---
+
+**Autor:** LiamTec

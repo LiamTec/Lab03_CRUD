@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    image: liamtec/crud-laravel-app:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_DATABASE: estudiantes
+      DB_USERNAME: root
+      DB_PASSWORD: example
+    command: >
+  bash -c "sleep 15 && composer install && php artisan migrate --force && apache2-foreground"
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: estudiantes
+      MYSQL_ROOT_PASSWORD: example
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
